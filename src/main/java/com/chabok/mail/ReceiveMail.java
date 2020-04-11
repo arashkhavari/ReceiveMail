@@ -1,3 +1,5 @@
+package com.chabok.mail;
+
 import javax.mail.*;
 import java.io.*;
 import java.text.ParseException;
@@ -6,10 +8,11 @@ import java.util.*;
 import org.jsoup.*;
 import org.jsoup.nodes.*;
 import org.jsoup.select.*;
+import io.github.cdimascio.dotenv.Dotenv;
 
-public class JavaMail {
-    // Read config.properties file in resource dir
-    private static ResourceBundle rb = ResourceBundle.getBundle("config");
+public class ReceiveMail {
+    // Read from dotenv
+    public static Dotenv dotenv = Dotenv.configure().directory("/opt/.env").load();
     public static void receiveMail(String userName, String password) throws IOException {
         try {
             // Connect to mail server
@@ -17,7 +20,7 @@ public class JavaMail {
             properties.setProperty("mail.store.protocol", "pop3");
             Session emailSession = Session.getDefaultInstance(properties);
             Store emailStore = emailSession.getStore("pop3");
-            emailStore.connect(rb.getString("pop_server"), userName, password);
+            emailStore.connect(dotenv.get("pop_server"), userName, password);
             Folder emailFolder = emailStore.getFolder("INBOX");
             emailFolder.open(Folder.READ_ONLY);
             Message messages[] = emailFolder.getMessages();
@@ -33,7 +36,7 @@ public class JavaMail {
                 Document doc = Jsoup.parse(body);
                 Elements paragraphs = doc.select("p");
                 // Check encode path file is exist
-                File checkfile=new File(rb.getString("encode_file_path"));
+                File checkfile=new File(dotenv.get("encode_file_path"));
                 if(!checkfile.getParentFile().exists()){
                     checkfile.getParentFile().mkdir();
                 }
@@ -41,19 +44,19 @@ public class JavaMail {
                     checkfile.createNewFile();
                 }
                 // Set fromdate in search emails
-                Date fromdate = new Date(System.currentTimeMillis() - (Integer.parseInt(rb.getString("last_hour")) * 60 * 60 * 1000));
+                Date fromdate = new Date(System.currentTimeMillis() - (Integer.parseInt(dotenv.get("last_hour")) * 60 * 60 * 1000));
                 // check email date is newer than from date
                 if( date.compareTo(fromdate) > 0 ) {
                     // check spesified email sender
-                    if(message.getFrom()[0].toString().contains(rb.getString("receive_from"))) {
+                    if(message.getFrom()[0].toString().contains(dotenv.get("receive_from"))) {
                         // check spesified email subject
-                        if(message.getSubject().contains(rb.getString ("search_subject"))) {
+                        if(message.getSubject().contains(dotenv.get("search_subject"))) {
                             // encode subject for uniq email
                             String subjectencoded = Base64.getEncoder().encodeToString(message.getSubject().getBytes());
                             // Read encode file for check duplicate subject
                             String[] words=null;
                             int duplicate=0;
-                            File f1=new File(rb.getString("encode_file_path"));
+                            File f1=new File(dotenv.get("encode_file_path"));
                             FileReader fr = new FileReader(f1);
                             BufferedReader br = new BufferedReader(fr);
                             String s;
@@ -74,13 +77,13 @@ public class JavaMail {
                                 PrintWriter pw = null;
                                 try {
                                     // Write new email encode subject to encode file
-                                    fw = new FileWriter(rb.getString("encode_file_path"), true);
+                                    fw = new FileWriter(dotenv.get("encode_file_path"), true);
                                     bw = new BufferedWriter(fw);
                                     pw = new PrintWriter(bw);
                                     pw.println(subjectencoded);
                                     pw.flush();
                                     // show email data on sysout
-                                    System.out.printf(rb.getString("sysout_format"), message.getFrom()[0], formattedDate, message.getSubject(), paragraphs.text());
+                                    System.out.printf("Email from=%s at=%s about=%s request=%s\n", message.getFrom()[0], formattedDate, message.getSubject(), paragraphs.text());
                                 } finally {
                                     try {
                                         pw.close();
@@ -107,6 +110,6 @@ public class JavaMail {
     }
 
     public static void main(String... args) throws IOException {
-        receiveMail(rb.getString("pop_server_username"), rb.getString("pop_server_password"));
+        receiveMail(dotenv.get("pop_server_username"), dotenv.get("pop_server_password"));
     }
 }

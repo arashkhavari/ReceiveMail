@@ -1,0 +1,11 @@
+# Rename to .env and put in /opt dir
+pop_server=pop.mail.server
+pop_server_username=pop@mail.server
+pop_server_password=password
+last_hour=3
+# Get Email's from when
+receive_from=from@mail.server
+# Spesify receive Email's from
+search_subject=search_text
+encode_file_path=/path/to/encode/file.text
+# Encode Email's subject for get duplicate email
