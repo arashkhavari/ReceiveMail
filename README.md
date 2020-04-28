@@ -10,11 +10,11 @@ pop_server_password=password
 last_hour=3
 receive_from=from@mail.server
 search_subject=search_text
-encode_file_path=/path/to/encode/file.text
+mysql_url=jdbc:mysql://db_address:3306/dbname
+mysql_user=username
+mysql_pass=password
+table_name=table
 ```
-
-###### Encode  
-For uniq mail get base64 subject in file and check every time code running.  
 
 ###### Last hour  
 Check email from spesific last hour cause POP3 not get unseen message.  
