@@ -7,5 +7,8 @@ last_hour=3
 receive_from=from@mail.server
 # Spesify receive Email's from
 search_subject=search_text
-encode_file_path=/path/to/encode/file.text
-# Encode Email's subject for get duplicate email
+# Connect to database for Eventual consistency
+mysql_url=jdbc:mysql://db_address:3306/dbname
+mysql_user=username
+mysql_pass=password
+table_name=table
